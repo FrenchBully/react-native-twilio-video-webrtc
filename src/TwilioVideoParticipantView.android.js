@@ -5,9 +5,9 @@
  *   Jonathan Chang <slycoder@gmail.com>
  */
 
-import { requireNativeComponent } from 'react-native'
-import PropTypes from 'prop-types'
-import React from 'react'
+import { requireNativeComponent } from "react-native";
+import PropTypes from "prop-types";
+import React from "react";
 
 class TwilioRemotePreview extends React.Component {
   static propTypes = {
@@ -15,8 +15,9 @@ class TwilioRemotePreview extends React.Component {
       /**
        * The participant's video track you want to render in the view.
        */
-      videoTrackSid: PropTypes.string.isRequired
+      videoTrackSid: PropTypes.string.isRequired,
     }),
+    onFrameDimensionsChanged: PropTypes.func,
     trackSid: PropTypes.string,
     renderToHardwareTextureAndroid: PropTypes.string,
     onLayout: PropTypes.string,
@@ -25,23 +26,36 @@ class TwilioRemotePreview extends React.Component {
     importantForAccessibility: PropTypes.string,
     accessibilityLabel: PropTypes.string,
     nativeID: PropTypes.string,
-    testID: PropTypes.string
+    testID: PropTypes.string,
+  };
+
+  buildNativeEventWrappers() {
+    return ["onFrameDimensionsChanged"].reduce((wrappedEvents, eventName) => {
+      if (this.props[eventName]) {
+        return {
+          ...wrappedEvents,
+          [eventName]: (data) => this.props[eventName](data.nativeEvent),
+        };
+      }
+      return wrappedEvents;
+    }, {});
   }
 
-  render () {
-    const { trackIdentifier } = this.props
+  render() {
+    const { trackIdentifier } = this.props;
     return (
       <NativeTwilioRemotePreview
         trackSid={trackIdentifier && trackIdentifier.videoTrackSid}
         {...this.props}
+        {...this.buildNativeEventWrappers()}
       />
-    )
+    );
   }
 }
 
 const NativeTwilioRemotePreview = requireNativeComponent(
-  'RNTwilioRemotePreview',
+  "RNTwilioRemotePreview",
   TwilioRemotePreview
-)
+);
 
-module.exports = TwilioRemotePreview
+module.exports = TwilioRemotePreview;
